@@ -11,7 +11,7 @@ const int MAXRECV = 1024;
 class Socket
 {
 public:
-	Socket(const string name); // Name gibt an ob Cleint oder Server z.B.
+	Socket(const string name, const int internet_family = AF_INET); // Name gibt an ob Cleint oder Server z.B.
 	virtual ~Socket();
 
 	// TCP Socket erstellen
@@ -43,10 +43,13 @@ public:
 	const Socket& operator << (const string& s) const;
 	const Socket& operator >> (string& s) const;
 
+	static bool is_ip6(const string addr);
+
 private:
 	int m_sock;
 	sockaddr_in m_addr;
 	string m_name;
+	int m_internet_family;
 };
 
 #endif

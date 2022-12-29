@@ -21,6 +21,9 @@
     <ClCompile Include="Socket.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="nur_github_branch_test.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Util.h">

@@ -140,6 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="nur_github_branch_test.cpp" />
     <ClCompile Include="Socket.cpp" />
   </ItemGroup>
   <ItemGroup>

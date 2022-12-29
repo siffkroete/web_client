@@ -1,7 +1,7 @@
 #include "Socket.h"
 
 
-Socket::Socket(const string name) : m_sock(0), m_addr(), m_name(name)
+Socket::Socket(const string name, const int internet_family) : m_sock(0), m_addr(), m_name(name), m_internet_family(internet_family)
 {
     // Winsock.dll initialisieren
     WORD wVersionRequested;
@@ -24,7 +24,7 @@ Socket::~Socket()
 // Erzeugt TCP Socket
 bool Socket::create()
 {
-    m_sock = ::socket(AF_INET, SOCK_STREAM, 0);
+    m_sock = ::socket(m_internet_family, SOCK_STREAM, 0);
     if (m_sock < 0) {
         throw SocketException(m_name + ": Fehler beim Anlegen des Sockets." + Util::get_err_msg(WSAGetLastError()));
     }
@@ -40,7 +40,7 @@ bool Socket::UDP_create()
 bool Socket::bind(const int port)
 {
     if (!is_valid()) return false;
-    m_addr.sin_family = AF_INET;
+    m_addr.sin_family = m_internet_family;
     m_addr.sin_addr.s_addr = INADDR_ANY;
     m_addr.sin_port = htons(port);
 
@@ -71,6 +71,7 @@ bool Socket::accept(Socket& new_socket)
 // Baut die Verbindung zum Server auf
 bool Socket::connect(const string host, const int port)
 {
+
     if (!is_valid()) return false;
     struct hostent* host_info;
     unsigned long addr;
@@ -78,9 +79,13 @@ bool Socket::connect(const string host, const int port)
 
     // Vom Tutorial und mir
     TCHAR host_addr[MAXRECV + 1];
+    memset(&host_addr, 0, sizeof(host_addr));
     Util::char_to_wchar(host.c_str(), host_addr, MAXRECV);
-    if (InetPton(AF_INET, host_addr, &m_addr.sin_addr.s_addr) == 1)  // Vom Tutorial
+
+    // Vom Tutorial
+    if (InetPton(m_internet_family, host_addr, &m_addr.sin_addr.s_addr) == 1)  // 1 ist korrekt
     {
+        // Alles Ok für ipv4
     }
     // End vom Tutorial und mir
 
@@ -98,7 +103,7 @@ bool Socket::connect(const string host, const int port)
         int err;
         memset(&hints, 0, sizeof(hints));
         hints.ai_socktype = SOCK_STREAM;
-        hints.ai_family = AF_INET;
+        hints.ai_family = m_internet_family;
 
         // Für den FAll der Fälle: Wandle den Servernamen in eine IP-Adresse um
         /* Vom Buch
@@ -118,7 +123,8 @@ bool Socket::connect(const string host, const int port)
         m_addr.sin_addr.S_un = ((struct sockaddr_in*)(res->ai_addr))->sin_addr.S_un; // Vom Tutorial
     }
 
-    m_addr.sin_family = AF_INET;
+    m_addr.sin_family = m_internet_family;
+   
     m_addr.sin_port = htons(port);
 
     int status = ::connect(m_sock, (sockaddr*)&m_addr, sizeof(m_addr));
@@ -193,4 +199,13 @@ const Socket& Socket::operator >> (string& s) const
         throw SocketException(m_name + ": Fehler in in Socket::operator >> (), Socket::recv()");
     }
     return *this;
+}
+
+
+bool Socket::is_ip6(const string addr) 
+{
+    if (addr.find(string(":")) != std::string::npos) {
+        return true;
+    }
+    return false;
 }
